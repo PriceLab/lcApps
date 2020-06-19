@@ -108,6 +108,7 @@ server <- function(input, output, session){
 } # server
 #----------------------------------------------------------------------------------------------------
 printf("about to run shiny app on port 9044")
-app <- shinyApp(ui, server)
-runApp(app, port=3838, launch.browse=FALSE, host="0.0.0.0")
+#runApp(shinyApp(ui, server), port=3838, launch.browse=FALSE, host="0.0.0.0")
+shinyApp(ui, server)
+
 
