@@ -1,5 +1,6 @@
 library(shiny)
 library(later)
+printf <- function(...) print(noquote(sprintf(...)))
 source("igvModule.R")
 source("dataTableModule.R")
 source("messageBoxModule.R")
@@ -16,11 +17,11 @@ snpsTab <- function()
        fluidRow(
            div(igvUI("igv"),
                style="margin: 10px; margin-bottom: 5px; padding: 10px; border: 3px solid black; border-radius: 10px;"),
+           messageBoxUI(id="messageBox.igv", title="igvselection", titleSpan=1, boxSpan=8),
            div(dataTableUI("snpDataTable"),
                style="margin: 10px; margin-bottom: 30px; padding: 10px; border: 3px solid black; border-radius: 10px;"),
            #actionButton("addSNPsTrackButton", "Add SNP Track"),
            #actionButton("addGHTrackButton", "Add GeneHancer Track"),
-           #messageBoxUI(id="messageBox.snpTable", title="snps", titleSpan=1, boxSpan=8),
            #messageBoxUI(id="messageBox.igv", title="igvselection", titleSpan=2, boxSpan=8),
            #DTOutput("geneTable"),
            style="margin-top:5px;")
@@ -51,34 +52,32 @@ server <- function(input, output, session){
                      pageLength=10,
                      visibleRows = reactive("all"))
 
-   callModule(messageBoxServer, "messageBox.snpTable", newContent=roi)
-
    selectedEntity <- callModule(igvServer, "igv",
                                 genome="hg38",
                                 geneModelDisplayMode="COLLAPSED",
                                 locus="chr19:44,854,808-44,940,011") #"APOE")
 
-    observe({
-       printf("entering entity observe")
-       geneOrSnp <- selectedEntity();
-       print(geneOrSnp)
-       if(!is.null(geneOrSnp)){
-          printf("--- selected in igv:")
-          print(geneOrSnp)
-          if(nchar(geneOrSnp) > 0){
-             printf("--- selected in igv: %s, calling dbSNP", geneOrSnp)
-             callModule(iframeSearchServer, "dbSNPSearch",
-                        website=reactive("dbSNP"), geneSymbol=reactive(geneOrSnp))
-             printf("--- selected in igv: %s, calling pubmed", geneOrSnp)
-             callModule(iframeSearchServer, "pubmedSearch",
-                        website=reactive("pubmed"), geneSymbol=reactive(geneOrSnp))
-             callModule(iframeSearchServer, "googleSearch",
-                        website=reactive("google"), geneSymbol=reactive(geneOrSnp))
-             } # if nchar > 0
-          } # if !is.null
-       })
+   observe({
+      printf("entering entity observe")
+      geneOrSnp <- selectedEntity();
+      print(geneOrSnp)
+      if(!is.null(geneOrSnp)){
+         printf("--- selected in igv:")
+         print(geneOrSnp)
+         if(nchar(geneOrSnp) > 0){
+            printf("--- selected in igv: %s, calling dbSNP", geneOrSnp)
+            callModule(iframeSearchServer, "dbSNPSearch",
+                       website=reactive("dbSNP"), geneSymbol=reactive(geneOrSnp))
+            printf("--- selected in igv: %s, calling pubmed", geneOrSnp)
+            callModule(iframeSearchServer, "pubmedSearch",
+                       website=reactive("pubmed"), geneSymbol=reactive(geneOrSnp))
+            callModule(iframeSearchServer, "googleSearch",
+                       website=reactive("google"), geneSymbol=reactive(geneOrSnp))
+            } # if nchar > 0
+         } # if !is.null
+      })
 
-   #callModule(messageBoxServer, "messageBox.igv", newContent=selectedEntity)
+   callModule(messageBoxServer, "messageBox.igv", newContent=selectedEntity)
 
    observe({
       rsids <- roi()
@@ -108,5 +107,7 @@ server <- function(input, output, session){
 
 } # server
 #----------------------------------------------------------------------------------------------------
-runApp(shinyApp(ui, server), port=9044)
+printf("about to run shiny app on port 9044")
+app <- shinyApp(ui, server)
+runApp(app, port=3838, launch.browse=FALSE, host="0.0.0.0")
 

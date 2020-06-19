@@ -1,17 +1,16 @@
-ID = 18jun2020
-IMAGE_NAME = lc_app_$(ID)
-TESTPORT=60055
+ID = 19jun2020
+BASE_IMAGE_NAME = lc_app_base_$(ID)
+APP_IMAGE_NAME = lc_app_$(ID)
 
 build:
-	docker build -t $(IMAGE_NAME) -f Dockerfile .
+	docker build -t $(APP_IMAGE_NAME) -f Dockerfile .
+
+build-base:
+	docker build -t $(BASE_IMAGE_NAME) -f Dockerfile-base .
 
 bash:
 	docker run -it \
-           -p 9044:9044 \
+           -p 9051:3838 \
            --entrypoint /bin/bash \
-           $(IMAGE_NAME)
-
-
-testDockerReadiness:
-	R -e 'shiny::runApp("lcApp.R")'
+           $(APP_IMAGE_NAME)
 

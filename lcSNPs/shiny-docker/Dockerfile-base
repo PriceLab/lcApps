@@ -1,0 +1,5 @@
+FROM bioconductor/bioconductor_docker
+WORKDIR /home/shiny
+COPY ./installPrerequisites.R .
+RUN R -f ./installPrerequisites.R .
+
