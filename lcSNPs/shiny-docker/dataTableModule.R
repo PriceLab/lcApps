@@ -1,6 +1,8 @@
 library(shiny)
 library(DT)
 
+printf <- function(...) print(noquote(sprintf(...)))
+
 dataTableUI <- function(id){
   tagList(
     DTOutput(NS(id, "dataTable"))

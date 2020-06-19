@@ -1,6 +1,6 @@
+printf <- function(...) print(noquote(sprintf(...)))
 library(shiny)
 library(later)
-printf <- function(...) print(noquote(sprintf(...)))
 source("igvModule.R")
 source("dataTableModule.R")
 source("messageBoxModule.R")

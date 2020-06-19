@@ -1,5 +1,7 @@
 library(shiny)
 
+printf <- function(...) print(noquote(sprintf(...)))
+
 iframeSearchUI <- function(id, title){
 
    fluidRow(
