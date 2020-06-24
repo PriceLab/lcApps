@@ -1,4 +1,4 @@
-ID = 19jun2020
+ID = 23jun2020
 BASE_IMAGE_NAME = lc_app_base_$(ID)
 APP_IMAGE_NAME = lc_app_$(ID)
 
