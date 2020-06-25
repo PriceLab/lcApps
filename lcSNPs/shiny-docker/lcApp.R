@@ -2,6 +2,7 @@ printf <- function(...) print(noquote(sprintf(...)))
 library(shiny)
 library(shinyModules)
 library(later)
+library (RSQLite)
 #----------------------------------------------------------------------------------------------------
 tbl.gh <- get(load("tbl.gh.apoe.RData"))
 colnames(tbl.gh)[grep("ghid", colnames(tbl.gh))] <- "name"
@@ -11,6 +12,17 @@ tbl.snps <- get(load("tbl.snps.598.RData"))
 tbl.genes <- get(load("tbl.summary.1010x6-gene-rowNames.RData"))
 tbl.genes <- tbl.genes[, c("Longevity", "Feature", "Function", "PMID")]
 colnames(tbl.genes)[2] <- "Longevity Feature"
+#----------------------------------------------------------------------------------------------------
+driver <- dbDriver("SQLite")
+dbConnection <- dbConnect(driver, dbname = "sqlite.db")
+template.comment <- data.frame(author="",
+                               timestamp=Sys.time(),
+                               entity="",
+                               tags="",
+                               text="",
+                               stringsAsFactors=FALSE)
+if(!"comments" %in% dbListTables(dbConnection))
+   dbCreateTable(dbConnection, "comments", template.comment)
 #----------------------------------------------------------------------------------------------------
 snpsPage <- function()
 {
@@ -74,7 +86,8 @@ ui <- fluidPage(
           tabPanel(title="Homologene", wellPanel(iframeSearchUI(id="homologeneSearch",  title="Homologene"))),
           tabPanel(title="KEGG", wellPanel(iframeSearchUI(id="keggSearch",  title="KEGG"))),
           tabPanel(title="PubMed", wellPanel(iframeSearchUI(id="pubmedSearch", title="PubMed"))),
-          tabPanel(title="Google", wellPanel(iframeSearchUI(id="googleSearch", title="Google")))
+          tabPanel(title="Google", wellPanel(iframeSearchUI(id="googleSearch", title="Google"))),
+          tabPanel(title="Notes", wellPanel(commentsUI(id="comments"), title="Notes"))
           ),
     style="margin: 10px; margin-top: 10px; margin-bottom: 50px;"
    )
@@ -121,6 +134,8 @@ server <- function(input, output, session){
                  website=reactive("KEGG"), geneSymbol=reactive(selectedGenes))
       callModule(iframeSearchServer, "geneCardsSearch",
                  website=reactive("GeneCards"), geneSymbol=reactive(selectedGenes))
+      callModule(commentsServer, "comments", dbConnection, entityName=reactive(selectedGenes))
+
       })
 
 
@@ -140,6 +155,7 @@ server <- function(input, output, session){
 
        callModule(iframeSearchServer, "pubmedSearch",
                      website=reactive("PubMed"), geneSymbol=reactive(selectedSNP))
+       callModule(commentsServer, "comments", dbConnection, entityName=reactive(selectedSNP))
        })
 
 
