@@ -1,0 +1,9 @@
+th {
+    text-align: center;
+}
+
+.modal-backdrop {
+  background-color: rgba(100, 100, 100, 0.0);
+  width: 100vw;
+  height: 100vh;
+}
